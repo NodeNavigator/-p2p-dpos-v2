@@ -1,0 +1,302 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                    RUNNING 2-4 NODES - VISUAL GUIDE                        ║
+║                        Step-by-Step Walkthrough                            ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OPTION 1: TWO-NODE SETUP (15 minutes)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 1: Prepare (1 min)
+┌─────────────────────────────────────────────────────────┐
+│ $ cd p2p-dpos-v2                                        │
+│ $ make clean && make build                              │
+│                                                         │
+│ RESULT: ✓ build/node (36 MB)                           │
+└─────────────────────────────────────────────────────────┘
+
+STEP 2: Start Node A (3 min)
+┌──────────────────────────────────────────────────────────┐
+│ TERMINAL 1:                                              │
+│ $ ./build/node interactive --initial-balance 5000 \     │
+│   --port 30333                                           │
+│                                                          │
+│ WAIT FOR:                                               │
+│ Your peer ID: 12D3KooWg3xZ7mXxjZ8X...                   │
+│ Listening on: /ip4/127.0.0.1/tcp/30333/p2p/...          │
+│                                                          │
+│ COPY: The full peer ID (everything after /p2p/)         │
+└──────────────────────────────────────────────────────────┘
+
+STEP 3: Start Node B (3 min)
+┌──────────────────────────────────────────────────────────┐
+│ TERMINAL 2:                                              │
+│ $ ./build/node interactive --initial-balance 5000 \     │
+│   --port 30334 \                                         │
+│   --bootstrap /ip4/127.0.0.1/tcp/30333/p2p/[PASTE_ID]   │
+│                                                          │
+│ RESULT:                                                 │
+│ Your peer ID: 12D3KooTjK9pQqL2nB4Y...                   │
+│ Connected to bootstrap peer ✓                            │
+│ Connected Peers: 1                                       │
+└──────────────────────────────────────────────────────────┘
+
+STEP 4: Register Validators (1 min)
+┌──────────────────────────────────────────────────────────┐
+│ TERMINAL 1:                                              │
+│ > register-validator --stake 2000                        │
+│ ✓ Registered                                             │
+│                                                          │
+│ TERMINAL 2:                                              │
+│ > register-validator --stake 2000                        │
+│ ✓ Registered                                             │
+└──────────────────────────────────────────────────────────┘
+
+STEP 5: Verify Consensus (2 min)
+┌──────────────────────────────────────────────────────────┐
+│ TERMINAL 1:                                              │
+│ > validators                                             │
+│ Validator A: Stake: 2000, Rank: 0, Status: active       │
+│ Validator B: Stake: 2000, Rank: 1, Status: active       │
+│                                                          │
+│ > status                                                 │
+│ Block Height: 0                                          │
+│ Connected Peers: 1                                       │
+│                                                          │
+│ [Wait 10 seconds]                                        │
+│                                                          │
+│ > status                                                 │
+│ Block Height: 1                                          │
+│ Connected Peers: 1                                       │
+│ ✅ BLOCKS ARE BEING PRODUCED!                            │
+└──────────────────────────────────────────────────────────┘
+
+STEP 6: Test Transfers (2 min)
+┌──────────────────────────────────────────────────────────┐
+│ TERMINAL 2:                                              │
+│ > balance                                                │
+│ Your address: 1a2b3c4d5e6f...                           │
+│ Balance: 3000 (5000 - 2000 stake)                        │
+│                                                          │
+│ TERMINAL 1:                                              │
+│ > transfer --to 1a2b3c4d5e6f... --amount 500            │
+│ ✓ Transfer accepted                                      │
+│                                                          │
+│ TERMINAL 2:                                              │
+│ > balance                                                │
+│ Balance: 3500 (3000 + 500 received)                      │
+│ ✅ TRANSFER WORKED!                                       │
+└──────────────────────────────────────────────────────────┘
+
+STEP 7: Cleanup
+┌──────────────────────────────────────────────────────────┐
+│ TERMINAL 1:                                              │
+│ > exit                                                   │
+│                                                          │
+│ TERMINAL 2:                                              │
+│ > exit                                                   │
+│                                                          │
+│ ✓ Both nodes shut down cleanly                          │
+└──────────────────────────────────────────────────────────┘
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OPTION 2: THREE-NODE SETUP (20 minutes)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 1: Start Node A (Terminal 1)
+├─ Command: ./build/node interactive --initial-balance 5000 --port 30333
+├─ Wait for: Peer ID
+└─ Copy: [PEER_ID_A]
+
+STEP 2: Start Node B (Terminal 2)
+├─ Command: ./build/node interactive --initial-balance 5000 --port 30334 \
+│   --bootstrap /ip4/127.0.0.1/tcp/30333/p2p/[PEER_ID_A]
+└─ Result: Connected Peers: 1 ✓
+
+STEP 3: Start Node C (Terminal 3)
+├─ Command: ./build/node interactive --initial-balance 5000 --port 30335 \
+│   --bootstrap /ip4/127.0.0.1/tcp/30333/p2p/[PEER_ID_A]
+└─ Result: Connected Peers: 1 ✓
+
+STEP 4: Register All Three (in each terminal)
+├─ T1: > register-validator --stake 1500
+├─ T2: > register-validator --stake 1500
+└─ T3: > register-validator --stake 1500
+
+STEP 5: Verify Consensus
+T1: > validators
+├─ Should show 3 validators (A, B, C)
+├─ All with Status: active
+└─ Ranks: 0, 1, 2
+
+STEP 6: Watch Block Production
+├─ T1: > status → Block Height: 0, Connected Peers: 2
+├─ [Wait 10 seconds]
+├─ T2: > status → Block Height: 1, Connected Peers: 2
+├─ [Wait 10 seconds]
+└─ T3: > status → Block Height: 2, Connected Peers: 2
+
+BLOCK PRODUCTION PATTERN:
+├─ Block 0→1: Node A produces (Rank 0)
+├─ Block 1→2: Node B produces (Rank 1)
+├─ Block 2→3: Node C produces (Rank 2)
+├─ Block 3→4: Node A produces (Rank 0) ← cycles
+└─ ✅ ROUND-ROBIN CONSENSUS WORKING!
+
+STEP 7: Test Full Mesh Transfers
+├─ A→B: > transfer --to [B_ADDR] --amount 300
+├─ B→C: > transfer --to [C_ADDR] --amount 300
+└─ C→A: > transfer --to [A_ADDR] --amount 300
+
+STEP 8: Verify All Nodes See Updates
+├─ T1: > balance [A_ADDR] → 4800 (5000 - 1500 stake + 300 from C)
+├─ T2: > balance [B_ADDR] → 4800 (5000 - 1500 stake + 300 from A)
+└─ T3: > balance [C_ADDR] → 4800 (5000 - 1500 stake + 300 from B)
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OPTION 3: FOUR-NODE SETUP (30 minutes)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Start Four Nodes in Sequence:
+
+T1 (Node A, port 30333):
+  $ ./build/node interactive --initial-balance 5000 --port 30333
+  [Copy PEER_ID_A]
+
+T2 (Node B, port 30334):
+  $ ./build/node interactive --initial-balance 5000 --port 30334 \
+    --bootstrap /ip4/127.0.0.1/tcp/30333/p2p/[PEER_ID_A]
+
+T3 (Node C, port 30335):
+  $ ./build/node interactive --initial-balance 5000 --port 30335 \
+    --bootstrap /ip4/127.0.0.1/tcp/30333/p2p/[PEER_ID_A]
+
+T4 (Node D, port 30336):
+  $ ./build/node interactive --initial-balance 5000 --port 30336 \
+    --bootstrap /ip4/127.0.0.1/tcp/30333/p2p/[PEER_ID_A]
+
+Register All Four:
+  All terminals: > register-validator --stake 1200
+
+Verify All Connected:
+  T1: > status
+      Connected Peers: 3 ✓
+      Block Height: 0
+
+Monitor Block Production:
+  [After 10 seconds]
+  > status
+  Block Height: 1
+
+  [After 20 seconds]
+  > status
+  Block Height: 2
+
+  [After 30 seconds]
+  > status
+  Block Height: 3
+
+  ✅ 4-NODE NETWORK CONSENSUS WORKING!
+
+Network Diagram:
+  T1 (Node A) ←→ T2 (Node B)
+       ↓  ↗
+       ↓/
+  T4 (Node D)←→ T3 (Node C)
+
+Expected Result:
+  Block Height: Synchronized across all 4 nodes
+  Validators: All 4 visible in all nodes
+  Connected Peers: Each node shows 3
+  Block Time: ~10 seconds between blocks
+  No crashes or errors
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SUCCESS CRITERIA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For Any Multi-Node Setup:
+  ✅ Connectivity    - All peers connected (show in status)
+  ✅ Validators      - All nodes see same validator list
+  ✅ Block Height    - Synchronized (within 1 block)
+  ✅ Transfers       - Work across nodes
+  ✅ Delegation      - Visible on all nodes
+  ✅ No Crashes      - No errors in any terminal
+  ✅ Memory Stable   - No rapid growth
+  ✅ Block Time      - ~10 seconds between blocks
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUICK TROUBLESHOOTING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ISSUE: Nodes won't connect
+FIX:   Check bootstrap address format
+       Correct: /ip4/127.0.0.1/tcp/30333/p2p/12D3KooWxxx...
+       Wrong:   12D3KooWxxx... (missing /ip4/127.0.0.1/tcp/PORT)
+
+ISSUE: Port already in use  
+FIX:   Use different ports for each node
+       Node A: --port 30333
+       Node B: --port 30334
+       Node C: --port 30335
+       Node D: --port 30336
+
+ISSUE: Blocks not being produced
+FIX:   Register as validator first
+       > register-validator --stake 1000
+       Then wait 10+ seconds
+
+ISSUE: Validators not showing on other nodes
+FIX:   Wait 5 seconds for propagation, then check again
+       > validators
+
+ISSUE: Transfer doesn't work
+FIX:   Use full address from balance command
+       > balance           (get your address)
+       > transfer --to [ADDRESS] --amount 100
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+NEXT STEPS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After successful multi-node test:
+
+1. ✅ Document results
+   - Screenshots of status outputs
+   - Note block production times
+   - Record validator rotations
+
+2. ✅ Share with team
+   - Send LEAD_BRIEFING.md to your lead
+   - Show make test-single output
+   - Demonstrate make test-multi working
+
+3. ✅ Plan next phase
+   - Security review
+   - Performance optimization
+   - Production deployment
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DOCUMENTATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For more details see:
+  • MULTI_NODE_GUIDE.md      - Detailed walkthrough
+  • MULTI_NODE_QUICK_REF.txt - One-page reference
+  • MAKEFILE_GUIDE.md        - Automated commands
+  • TESTING_GUIDE.md         - Full testing procedures
+  • LEAD_BRIEFING.md         - For your team lead
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🎉 YOU'RE NOW READY TO RUN MULTI-NODE NETWORKS AND VERIFY CONSENSUS WORKS!
+
+═══════════════════════════════════════════════════════════════════════════════

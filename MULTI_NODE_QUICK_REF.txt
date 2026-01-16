@@ -1,0 +1,236 @@
+# Multi-Node Quick Reference Card
+
+## One-Page Cheat Sheet for Running 2-4 Nodes
+
+---
+
+## SETUP 2 NODES (15 min)
+
+### Terminal 1: Node A
+```bash
+cd p2p-dpos-v2
+./build/node interactive --initial-balance 5000 --port 30333
+# WAIT FOR: Peer ID line
+# COPY: the full peer ID (e.g., 12D3KooWxxx...)
+```
+
+### Terminal 2: Node B
+```bash
+./build/node interactive --initial-balance 5000 --port 30334 \
+  --bootstrap /ip4/127.0.0.1/tcp/30333/p2p/PASTE_NODE_A_ID_HERE
+```
+
+### Both Terminals
+```
+> register-validator --stake 2000
+> wait 10 seconds
+> validators           ← Should show 2 validators
+> status               ← Should show Connected Peers: 1
+> transfer --to <address> --amount 500
+> exit                 ← When done
+```
+
+---
+
+## SETUP 3 NODES (20 min)
+
+### Terminal 1: Node A
+```bash
+./build/node interactive --initial-balance 5000 --port 30333
+# COPY: Peer ID
+```
+
+### Terminal 2: Node B
+```bash
+./build/node interactive --initial-balance 5000 --port 30334 \
+  --bootstrap /ip4/127.0.0.1/tcp/30333/p2p/NODE_A_ID
+```
+
+### Terminal 3: Node C
+```bash
+./build/node interactive --initial-balance 5000 --port 30335 \
+  --bootstrap /ip4/127.0.0.1/tcp/30333/p2p/NODE_A_ID
+```
+
+### All Terminals
+```
+> register-validator --stake 1500
+> wait 20 seconds
+> validators           ← Should show 3 validators
+> status               ← Should show Connected Peers: 2
+> transfer --to <addr> --amount 300
+> delegate --validator <addr> --amount 600
+```
+
+---
+
+## SETUP 4 NODES (30 min)
+
+### Terminal 1: Node A
+```bash
+./build/node interactive --initial-balance 5000 --port 30333
+```
+
+### Terminal 2: Node B
+```bash
+./build/node interactive --initial-balance 5000 --port 30334 \
+  --bootstrap /ip4/127.0.0.1/tcp/30333/p2p/NODE_A_ID
+```
+
+### Terminal 3: Node C
+```bash
+./build/node interactive --initial-balance 5000 --port 30335 \
+  --bootstrap /ip4/127.0.0.1/tcp/30333/p2p/NODE_A_ID
+```
+
+### Terminal 4: Node D
+```bash
+./build/node interactive --initial-balance 5000 --port 30336 \
+  --bootstrap /ip4/127.0.0.1/tcp/30333/p2p/NODE_A_ID
+```
+
+### All Terminals
+```
+> register-validator --stake 1200
+> wait 30 seconds
+> validators           ← Should show 4 validators
+> status               ← Should show Connected Peers: 3
+```
+
+---
+
+## KEY COMMANDS
+
+| Command | What it does |
+|---------|--------------|
+| `status` | Show block height, peer count, validators |
+| `validators` | List all registered validators |
+| `balance` | Show your balance and address |
+| `balance <addr>` | Show any account's balance |
+| `register-validator --stake 1000` | Become a validator (costs stake) |
+| `transfer --to <addr> --amount 100` | Send tokens to another node |
+| `delegate --validator <addr> --amount 100` | Delegate stake to validator |
+| `exit` | Stop this node |
+
+---
+
+## SUCCESS CHECKLIST
+
+- [ ] All nodes show "Connected Peers" = (number of other nodes)
+- [ ] All nodes show same "Validators" list
+- [ ] "Block Height" increases by 1 every ~10 seconds
+- [ ] Transfers work (balance updates on receiver)
+- [ ] Delegation visible on all nodes
+- [ ] No error messages
+
+---
+
+## VERIFICATION TIMELINE
+
+### At 0:00 - Start All Nodes
+- All nodes start
+- First node starts listening
+
+### At 0:30 - Connect Other Nodes
+- Other nodes bootstrap to first node
+- Should show "Connected Peers: 1, 2, 3..."
+
+### At 1:00 - Register Validators
+- Each node registers as validator
+- Block Height should be 0
+
+### At 2:00 - Watch Blocks
+- Block Height: 1 (first block produced)
+- Block Height: 2 (second block)
+- etc.
+
+### At 3:00 - Test Transfers
+- Send tokens between nodes
+- Verify balances update
+
+### At 4:00 - Test Delegation
+- Delegate to validators
+- Verify ranking updates
+
+---
+
+## COMMON ISSUES & FIXES
+
+| Problem | Fix |
+|---------|-----|
+| Port already in use | Use different ports: 30333, 30334, 30335, 30336 |
+| Nodes won't connect | Check bootstrap address format: `/ip4/127.0.0.1/tcp/PORT/p2p/ID` |
+| No blocks produced | Register as validator first: `register-validator --stake 1000` |
+| Validators not showing | Wait 5 seconds, then check: `validators` |
+| Transfer doesn't work | Use full address from `balance` command |
+
+---
+
+## WHAT TO EXPECT
+
+### 2 Nodes
+```
+Status Output:
+  Block Height: 1
+  Validators: 2
+  Connected Peers: 1      ← Other node
+  Memory: ~100 MB
+```
+
+### 3 Nodes
+```
+Status Output:
+  Block Height: 2
+  Validators: 3
+  Connected Peers: 2      ← Two other nodes
+  Memory: ~120 MB
+```
+
+### 4 Nodes
+```
+Status Output:
+  Block Height: 3
+  Validators: 4
+  Connected Peers: 3      ← Three other nodes
+  Memory: ~150 MB
+```
+
+---
+
+## BLOCK PRODUCTION PATTERN
+
+With 3 validators:
+- Block 1: Validator A produces
+- Block 2: Validator B produces
+- Block 3: Validator C produces
+- Block 4: Validator A produces (cycles)
+
+With 4 validators:
+- Block 1: Validator A
+- Block 2: Validator B
+- Block 3: Validator C
+- Block 4: Validator D
+- Block 5: Validator A (cycles)
+
+---
+
+## CLEANUP
+
+When done, in each terminal:
+```
+> exit
+```
+
+All nodes shut down gracefully and clean up.
+
+---
+
+## FULL DOCUMENTATION
+
+For complete details: **MULTI_NODE_GUIDE.md**
+For automation: **MAKEFILE_GUIDE.md** (use `make test-multi`)
+For your lead: **LEAD_BRIEFING.md**
+
+---
+
+**That's it! You can now run 2-4 nodes and verify consensus works! 🎉**
